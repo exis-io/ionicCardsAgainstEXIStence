@@ -8,7 +8,7 @@
  * Controller of the cardsAgainst
  */
 angular.module('cardsAgainst')
-  .controller('AppCtrl',['$scope', '$wamp', '$http', function ($scope, $wamp, $http) {
+  .controller('AppCtrl',['$scope', '$riffle', '$http', function ($scope, $wamp, $http) {
 
     try{
       $wamp.close();
@@ -22,11 +22,14 @@ angular.module('cardsAgainst')
     var registrar = 'https://node.exis.io:8880/';
 
     $scope.login = function (username) {
+      if(username){
+        username = 'xs.demo.exis.cardsagainst.' + username;
+      }
       var credentials = angular.toJson({domain: username, requestingdomain: "xs.demo.exis.cardsagainst"});
       attemptLogin();
 
       function register(){
-        var registerURL = registrar + 'register';
+        var registerURL = registrar + 'login';
         $http.post(registerURL, credentials).then(getToken, error);
       }
 
@@ -51,10 +54,11 @@ angular.module('cardsAgainst')
     }
 
     function connectWamp(session){
-      $wamp.connection._options.authmethods = ['token'];
-      $wamp.connection._options.realm = session.domain;
-      $wamp.connection._options.authid = session.domain;
-      $wamp.connection._options.onchallenge = function(){return session.token;};
+      $scope.username = $scope.getName(session.domain);
+      $wamp.connection.domain = session.domain;
+      $wamp.connection.options.authmethods = ['token'];
+      $wamp.connection.options.authid = session.domain;
+      $wamp.connection.options.onchallenge = function(){return session.token;};
       $wamp.open();
     }
 
@@ -62,13 +66,17 @@ angular.module('cardsAgainst')
       console.log(ret);
     }
 
-    $scope.$on('$wamp.open', function() {
+    $scope.$on('$riffle.open', function() {
       $scope.loggedIn = true;
     });
 
-    $scope.$on('$wamp.close', function() {
+    $scope.$on('$riffle.close', function() {
       $scope.loggedin = false;
       $scope.session = null;
     });
+
+    $scope.getName = function(domain){
+      return domain.split('.')[domain.split('.').length - 1];
+    };
 
   }]);
