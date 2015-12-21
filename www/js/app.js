@@ -3,7 +3,7 @@
 // angular.module is a global place for creating, registering and retrieving Angular modules
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
-var app = angular.module('cardsAgainst', ['ionic', 'ngRiffle'])//'vxWamp'])
+var app = angular.module('cardsAgainst', ['ionic', 'vxWamp'])
 
 app.config(function($stateProvider, $urlRouterProvider){
   $urlRouterProvider.otherwise('/')
@@ -18,8 +18,8 @@ app.config(function($stateProvider, $urlRouterProvider){
     templateUrl: 'templates/room.html'
   })
 })
-.config(['$riffleProvider', function($riffleProvider){
-  $riffleProvider.init('xs.demo.exis.cardsagainst', {}); 
+.config(['$wampProvider', function($wampProvider){
+  $wampProvider.init( {url: 'wss://node.exis.io:8000/ws'}); 
 }])
 .config(function ($httpProvider) {
   //disregard browser pre-flight checks

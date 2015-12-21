@@ -8,7 +8,7 @@
  * Controller of the cardsAgainst
  */
 angular.module('cardsAgainst')
-  .controller('RoomCtrl',['$scope', '$riffle', '$state', function ($scope, $wamp, $state) {
+  .controller('RoomCtrl',['$scope', '$wamp', '$state', function ($scope, $wamp, $state) {
     $scope.$on('$ionicView.enter', function(e) {
 
       if(!$scope.loggedIn){
@@ -23,9 +23,8 @@ angular.module('cardsAgainst')
       var drawReg = null;
       var alreadyPicked = false;
 
-      $wamp.call(container + '/play').then(startGame, error);
+      $wamp.call(container + '/play',[]).then(startGame, error);
       function startGame(ret){
-        console.log(ret);
         $scope.cards = ret.args[0];
         $scope.players = ret.args[1];
         $scope.state = ret.args[2];
@@ -34,7 +33,7 @@ angular.module('cardsAgainst')
       }
 
       function registerAndSubscribe(){
-        $wamp.call('xs.demo.Bouncer/setPerm', container, $scope.session.domain + '/draw').then(success, error);
+        $wamp.call('xs.demo.Bouncer/setPerm', [container, $scope.session.domain + '/draw']).then(success, error);
         drawReg = $wamp.register($scope.session.domain + '/draw', addNewCard);
         $wamp.subscribeOnScope($scope, container + roomId + '/answering', answerPhase);
         $wamp.subscribeOnScope($scope, container + roomId + '/picking', pickPhase);
@@ -44,14 +43,14 @@ angular.module('cardsAgainst')
       }
 
       $scope.leave = function(){
-        $wamp.call(container + roomId + '/leave').then(success, error);
+        $wamp.call(container + roomId + '/leave',[]).then(success, error);
         drawReg.$$state.value.unregister();
         $state.go('home');
       };
 
       $scope.pick = function(card){
         if(pickAllowed()){
-          $wamp.call(container + roomId + '/pick', card).then(success, error);
+          $wamp.call(container + roomId + '/pick', [card]).then(success, error);
           $scope.selected = card;
           alreadyPicked = true;
         }
@@ -60,7 +59,6 @@ angular.module('cardsAgainst')
       /*HANDLERS FOR SUBS AND REGISTERED CALLS*/
 
       function answerPhase(ret){
-        console.log('answer');
         alreadyPicked = false;
         $scope.selected = '';
         $scope.state = 'Answering';
@@ -75,7 +73,6 @@ angular.module('cardsAgainst')
       }
 
       function pickPhase(ret){
-        console.log('pick');
         alreadyPicked = false;
         $scope.selected = '';
         $scope.state = 'Picking';
@@ -89,7 +86,6 @@ angular.module('cardsAgainst')
       }
 
       function scorePhase(ret){
-        console.log('score');
         $scope.state = 'Scoring';
         $scope.chosenCard = ret[1];
         $scope.winner = $scope.getName(ret[0].domain);

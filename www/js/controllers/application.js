@@ -8,7 +8,7 @@
  * Controller of the cardsAgainst
  */
 angular.module('cardsAgainst')
-  .controller('AppCtrl',['$scope', '$riffle', '$http', function ($scope, $wamp, $http) {
+  .controller('AppCtrl',['$scope', '$wamp', '$http', function ($scope, $wamp, $http) {
 
     try{
       $wamp.close();
@@ -45,7 +45,6 @@ angular.module('cardsAgainst')
     };
 
     function buildSession (result) {
-      console.log(result);
       $scope.session = {
         domain: result.data.domain,
         token: result.data.login_token
@@ -55,10 +54,10 @@ angular.module('cardsAgainst')
 
     function connectWamp(session){
       $scope.username = $scope.getName(session.domain);
-      $wamp.connection.domain = session.domain;
-      $wamp.connection.options.authmethods = ['token'];
-      $wamp.connection.options.authid = session.domain;
-      $wamp.connection.options.onchallenge = function(){return session.token;};
+      $wamp.connection._options.realm = session.domain;
+      $wamp.connection._options.authmethods = ['token'];
+      $wamp.connection._options.authid = session.domain;
+      $wamp.connection._options.onchallenge = function(){return session.token;};
       $wamp.open();
     }
 
@@ -66,11 +65,11 @@ angular.module('cardsAgainst')
       console.log(ret);
     }
 
-    $scope.$on('$riffle.open', function() {
+    $scope.$on('$wamp.open', function() {
       $scope.loggedIn = true;
     });
 
-    $scope.$on('$riffle.close', function() {
+    $scope.$on('$wamp.close', function() {
       $scope.loggedin = false;
       $scope.session = null;
     });
